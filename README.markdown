@@ -9,6 +9,8 @@ It is derived from code in Stuart Sierra's [Lazytest][1] tool, and the
 credit for writing the vast majority of the code used in this library
 should therefore go to him.
 
+[1]: https://github.com/stuartsierra/lazytest
+
 ## Installation
 
 As usual, to use this library, add the following dependency to your
