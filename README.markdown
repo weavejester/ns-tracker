@@ -16,7 +16,7 @@ should therefore go to him.
 As usual, to use this library, add the following dependency to your
 `project.clj` file:
 
-    [ns-tracker "0.1.0"]
+    [ns-tracker "0.1.1"]
 
 ## Usage
 
