@@ -24,13 +24,13 @@ Use the `ns-tracker.core/ns-tracker` function to create a new tracker
 function for one or more source directories:
 
     (use 'ns-tracker.core)
-    (use '[clojure.java.io :only (file)])
 
     (def modified-namespaces
-      (ns-tracker [(file "src")]))
+      (ns-tracker ["src" "test"]))
 
-When you call the `modified-tracker` function, it will return a list
-of Clojure namespaces that need to be reloaded:
+When you call the `modified-namespaces` function, it will return a list
+of Clojure namespaces that have changed. You can then reload them on
+the fly:
 
     (doseq [ns-sym (modified-namespaces)]
       (require ns-sym :reload))
