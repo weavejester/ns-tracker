@@ -3,12 +3,16 @@
   (:use [ns-tracker.dependency :only (graph depend dependents remove-key)]
 	[ns-tracker.nsdeps :only (deps-from-ns-decl)]
         [clojure.set :only (union)]
+        [clojure.java.io :only (file)]
 	[clojure.tools.namespace :only (find-clojure-sources-in-dir
                                         read-file-ns-decl)]))
 
+(defn- file? [f]
+  (instance? java.io.File f))
+
 (defn- find-sources
   [dirs]
-  {:pre [(every? (fn [d] (instance? java.io.File d)) dirs)]}
+  {:pre [(every? file? dirs)]}
   (mapcat find-clojure-sources-in-dir dirs))
 
 (defn- newer-sources [dirs timestamp]
@@ -36,6 +40,16 @@
   (apply union (set changed-namespaces) (map #(dependents old-dependency-graph %)
 					     changed-namespaces)))
 
+(defn- make-file [f]
+  {:pre [(or (string? f) (file? f))]}
+  (if (file? f) f (file f)))
+
+(defn- normalize-dirs [dirs]
+  {:pre [(or (string? dirs) (sequential? dirs))]}
+  (cond
+   (string? dirs)     [(file dirs)]
+   (sequential? dirs) (map make-file dirs)))
+
 (defn ns-tracker
   "Returns a no-arg function which, when called, returns a set of
   namespaces that need to be reloaded, based on file modification
@@ -43,9 +57,9 @@
   ([dirs]
      (ns-tracker dirs (System/currentTimeMillis)))
   ([dirs initial-timestamp]
-     {:pre [(integer? initial-timestamp)
-            (every? (fn [f] (instance? java.io.File f)) dirs)]}
-     (let [timestamp (atom initial-timestamp)
+     {:pre [(integer? initial-timestamp)]}
+     (let [dirs (normalize-dirs dirs)
+           timestamp (atom initial-timestamp)
            dependency-graph (atom (graph))]
        (fn []
          (let [then @timestamp

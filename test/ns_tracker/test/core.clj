@@ -23,5 +23,20 @@
         (Thread/sleep 1000)
         (spit (file "tmp/example/util.clj") '(ns example.util))
         (is (= (modified-namespaces) #{'example.core 'example.util}))))
+
+    (testing "directories can be supplied as strings"
+      (let [modified-namespaces (ns-tracker ["tmp"])]
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/core.clj") '(ns example.core))
+        (is (= (modified-namespaces) #{'example.core}))
+        (is (empty? (modified-namespaces)))))
+
+    (testing "can supply directory as single string"
+      (let [modified-namespaces (ns-tracker "tmp")]
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/core.clj") '(ns example.core))
+        (is (= (modified-namespaces) #{'example.core}))
+        (is (empty? (modified-namespaces)))))
+
     (finally
      (FileUtils/deleteDirectory (file "tmp")))))
