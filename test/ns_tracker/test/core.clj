@@ -38,5 +38,15 @@
         (is (= (modified-namespaces) #{'example.core}))
         (is (empty? (modified-namespaces)))))
 
+    (testing "dependencies of older files accounted for"
+      (spit (file "tmp/example/util.clj") '(ns example.util))
+      (spit (file "tmp/example/core.clj")
+            '(ns example.core (:use example.util)))
+      (Thread/sleep 1000)
+      (let [modified-namespaces (ns-tracker [(file "tmp")])]
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/util.clj") '(ns example.util))
+        (is (= (modified-namespaces) #{'example.core 'example.util}))))
+
     (finally
      (FileUtils/deleteDirectory (file "tmp")))))
