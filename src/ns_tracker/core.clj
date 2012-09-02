@@ -60,7 +60,8 @@
      {:pre [(integer? initial-timestamp)]}
      (let [dirs (normalize-dirs dirs)
            timestamp (atom initial-timestamp)
-           dependency-graph (atom (graph))]
+           init-decls (newer-namespace-decls dirs 0)
+           dependency-graph (atom (update-dependency-graph (graph) init-decls))]
        (fn []
          (let [then @timestamp
                now  (System/currentTimeMillis)
