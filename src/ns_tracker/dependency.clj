@@ -6,12 +6,19 @@
   {:dependencies {}
    :dependents {}})
 
+(defn seq-union
+  "A union that preserves order."
+  ([] '())
+  ([s1] s1)
+  ([s1 s2] (concat s1 (remove (set s1) s2)))
+  ([s1 s2 & sets] (reduce seq-union (list* s1 s2 sets))))
+
 (defn- transitive
   "Recursively expands the set of dependency relationships starting
   at (get m x)"
   [m x]
   (reduce (fn [s k]
-	    (union s (transitive m k)))
+	    (seq-union s (transitive m k)))
 	  (get m x) (get m x)))
 
 (defn dependencies
