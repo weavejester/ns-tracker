@@ -1,4 +1,4 @@
-(defproject ns-tracker "0.1.2"
+(defproject ns-tracker "0.2.0"
   :description "Keep track of which namespaces have been modified"
   :dependencies [[org.clojure/clojure "1.2.1"]
                  [org.clojure/tools.namespace "0.1.3"]
