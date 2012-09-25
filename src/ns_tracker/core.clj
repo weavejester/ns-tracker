@@ -22,13 +22,13 @@
 (defn- modified?
   "Compare a file to a timestamp map to see if it's been modified since."
   [timestamp-map file]
-  (> (.lastModified file) (get timestamp-map file (.lastModified file))))
+  (> (.lastModified file) (get timestamp-map file 0)))
 
-(defn- newer-sources [timestamp-map]
-  (filter (partial modified? timestamp-map) (keys timestamp-map)))
+(defn- newer-sources [timestamp-map files]
+  (filter (partial modified? timestamp-map) files))
 
-(defn- newer-namespace-decls [timestamp-map]
-  (remove nil? (map read-file-ns-decl (newer-sources timestamp-map))))
+(defn- newer-namespace-decls [timestamp-map files]
+  (remove nil? (map read-file-ns-decl (newer-sources timestamp-map files))))
 
 (defn- add-to-dep-graph [dep-graph namespace-decls]
   (reduce (fn [g decl]
@@ -70,12 +70,12 @@
      {:pre [(map? initial-timestamp-map)]}
      (let [dirs (normalize-dirs dirs)
            timestamp-map (atom initial-timestamp-map)
-           init-decls (newer-namespace-decls @timestamp-map)
+           init-decls (newer-namespace-decls {} (keys @timestamp-map))
            dependency-graph (atom (update-dependency-graph (graph) init-decls))]
        (fn []
          (let [then @timestamp-map
-               now (current-timestamp-map (normalize-dirs ["src"]))
-               new-decls (newer-namespace-decls then)]
+               now (current-timestamp-map (normalize-dirs dirs))
+               new-decls (newer-namespace-decls then (keys now))]
            (when (seq new-decls)
              (let [new-names (map second new-decls)
                    affected-names
