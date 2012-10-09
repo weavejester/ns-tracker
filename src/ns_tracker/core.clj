@@ -15,7 +15,7 @@
   (mapcat find-clojure-sources-in-dir dirs))
 
 (defn- current-timestamp-map
-  "Get a the current modified timestamp map for all sources"
+  "Get the current modified timestamp map for all sources"
   [dirs]
   (into {} (map (fn [f] {f (.lastModified f)}) (find-sources dirs))))
 
