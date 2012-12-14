@@ -35,12 +35,12 @@
 (defn depends?
   "True if x is directly or transitively dependent on y."
   [graph x y]
-  (contains? (dependencies graph x) y))
+  (some #(= y %) (dependencies graph x)))
 
 (defn dependent
   "True if y is a dependent of x."
   [graph x y]
-  (contains? (dependents graph x) y))
+  (some #(= y %) (dependents graph x)))
 
 (defn- add-relationship [graph key x y]
   (update-in graph [key x] union #{y}))
