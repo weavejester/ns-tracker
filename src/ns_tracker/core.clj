@@ -45,12 +45,13 @@
   name in core.tools.namespace.parse"
   [rdr]
   (try
-   (loop [] (let [form (doto (read rdr) str)]
-              (cond
-               (ns-decl? form) [form nil]
-               (ns-in? form) [nil form]
-               (comment? form) (recur)
-               :else [nil nil])))
+    (loop []
+      (let [form (doto (read rdr) str)]
+        (cond
+         (ns-decl? form) [form nil]
+         (ns-in? form)   [nil form]
+         (comment? form) (recur)
+         :else           [nil nil])))
        (catch Exception e [nil nil])))
 
 (defn read-file-ns-decl
@@ -124,8 +125,7 @@
                now (current-timestamp-map (normalize-dirs dirs))
                [new-decls new-names] (newer-namespace-decls then now)]
            (when (seq new-names)
-             (let [ affected-names
-                   (affected-namespaces new-names @dependency-graph)]
+             (let [affected-names (affected-namespaces new-names @dependency-graph)]
                (reset! timestamp-map now)
                (swap! dependency-graph update-dependency-graph new-decls)
                affected-names)))))))
