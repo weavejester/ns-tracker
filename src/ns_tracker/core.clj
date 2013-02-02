@@ -43,7 +43,6 @@
   declaration must be the first Clojure form in the file, except
   for (comment ...) forms. Based on the function with the same
   name in core.tools.namespace.parse"
-
   [rdr]
   (try
    (loop [] (let [form (doto (read rdr) str)]
