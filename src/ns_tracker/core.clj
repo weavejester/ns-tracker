@@ -1,10 +1,13 @@
 (ns ns-tracker.core
   "Keeps track of which namespaces have changed and need to be reloaded."
   (:use [ns-tracker.dependency :only (graph seq-union depend dependents remove-key)]
-	[ns-tracker.nsdeps :only (deps-from-ns-decl)]
+        [ns-tracker.nsdeps :only (deps-from-ns-decl)]
         [clojure.java.io :only (file)]
-	[clojure.tools.namespace :only (find-clojure-sources-in-dir
-                                        read-file-ns-decl)]))
+        [clojure.tools.namespace
+          [find  :only (find-clojure-sources-in-dir)]
+          [parse :only (comment? ns-decl?)]])
+  (:require [clojure.java.io :as io])
+  (:import (java.io PushbackReader)))
 
 (defn- file? [f]
   (instance? java.io.File f))
@@ -21,14 +24,59 @@
 
 (defn- modified?
   "Compare a file to a timestamp map to see if it's been modified since."
-  [timestamp-map file]
-  (> (.lastModified file) (get timestamp-map file 0)))
+  [then now file]
+  (> (get now file 0) (get then file 0)))
 
-(defn- newer-sources [timestamp-map files]
-  (filter (partial modified? timestamp-map) files))
+(defn- newer-sources [then now]
+  (filter (partial modified? then now) (keys now)))
 
-(defn- newer-namespace-decls [timestamp-map files]
-  (remove nil? (map read-file-ns-decl (newer-sources timestamp-map files))))
+(defn ns-in?
+  "Returns true if form is a (in-ns ...) declaration."
+  [form]
+  (and (list? form) (= 'in-ns (first form))))
+
+(defn read-ns-decl
+  "Attempts to read a (ns ...) or (in-ns ...) declaration from a
+  java.io.PushbackReader. Returns [form nil] for ns declarations and
+  [nil form] for in-ns declarations, and [nil nil] if read fails or
+  if a ns or in-ns declaration cannot be found.  The ns/in-ns
+  declaration must be the first Clojure form in the file, except
+  for (comment ...) forms. Based on the function with the same
+  name in core.tools.namespace.parse"
+
+  [rdr]
+  (try
+   (loop [] (let [form (doto (read rdr) str)]
+              (cond
+               (ns-decl? form) [form nil]
+               (ns-in? form) [nil form]
+               (comment? form) (recur)
+               :else [nil nil])))
+       (catch Exception e [nil nil])))
+
+(defn read-file-ns-decl
+  "Attempts to read a (ns ...) or (in-ns ...) declaration from file.
+  Returns [form nil] for ns declarations and [nil form] for in-ns
+  declarations, and [nil nil] if read fails or if a ns or in-ns
+  declaration cannot be found. Based on the function with the same
+  name in core.tools.namespace.file"
+  [file]
+  (with-open [rdr (PushbackReader. (io/reader file))]
+    (read-ns-decl rdr)))
+
+(defn- newer-namespace-decls [then now]
+  (loop [new-decls []
+         new-names  #{}
+         files    (newer-sources then now)]
+    (let [file (first files)]
+      (if file
+        (let [[ns-decl ns-in] (read-file-ns-decl file)]
+          (if ns-decl
+            (recur (conj new-decls ns-decl) (conj new-names (second ns-decl)) (rest files))
+            (if ns-in
+              (recur new-decls (conj new-names (second (second ns-in))) (rest files))
+              (recur new-decls new-names (rest files)))))
+        [new-decls new-names]))))
 
 (defn- add-to-dep-graph [dep-graph namespace-decls]
   (reduce (fn [g decl]
@@ -70,16 +118,16 @@
      {:pre [(map? initial-timestamp-map)]}
      (let [dirs (normalize-dirs dirs)
            timestamp-map (atom initial-timestamp-map)
-           init-decls (newer-namespace-decls {} (keys @timestamp-map))
+           [init-decls init-names] (newer-namespace-decls {} @timestamp-map)
            dependency-graph (atom (update-dependency-graph (graph) init-decls))]
        (fn []
          (let [then @timestamp-map
                now (current-timestamp-map (normalize-dirs dirs))
-               new-decls (newer-namespace-decls then (keys now))]
-           (when (seq new-decls)
-             (let [new-names (map second new-decls)
-                   affected-names
+               [new-decls new-names] (newer-namespace-decls then now)]
+           (when (seq new-names)
+             (let [ affected-names
                    (affected-namespaces new-names @dependency-graph)]
+               (println "Reload Namespaces: " (pr-str affected-names))
                (reset! timestamp-map now)
                (swap! dependency-graph update-dependency-graph new-decls)
                affected-names)))))))
