@@ -1,14 +1,13 @@
 (ns ns-tracker.core
   "Keeps track of which namespaces have changed and need to be reloaded."
+  (:import java.io.PushbackReader)
+  (:require [clojure.java.io :as io])
   (:use [ns-tracker.dependency :only (graph seq-union depend dependents remove-key)]
         [ns-tracker.nsdeps :only (deps-from-ns-decl)]
         [ns-tracker.parse :only (read-in-ns-decl)]
         [clojure.java.io :only (file)]
-        [clojure.tools.namespace
-          [find  :only (find-clojure-sources-in-dir)]
-          [parse :only (read-ns-decl)]])
-  (:require [clojure.java.io :as io])
-  (:import (java.io PushbackReader)))
+        [clojure.tools.namespace.find :only (find-clojure-sources-in-dir)]
+        [clojure.tools.namespace.parse :only (read-ns-decl)]))
 
 (defn- file? [f]
   (instance? java.io.File f))
