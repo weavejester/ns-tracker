@@ -2,10 +2,11 @@
   "Keeps track of which namespaces have changed and need to be reloaded."
   (:use [ns-tracker.dependency :only (graph seq-union depend dependents remove-key)]
         [ns-tracker.nsdeps :only (deps-from-ns-decl)]
+        [ns-tracker.parse :only (read-in-ns-decl)]
         [clojure.java.io :only (file)]
         [clojure.tools.namespace
           [find  :only (find-clojure-sources-in-dir)]
-          [parse :only (comment? ns-decl?)]])
+          [parse :only (read-ns-decl)]])
   (:require [clojure.java.io :as io])
   (:import (java.io PushbackReader)))
 
@@ -30,53 +31,21 @@
 (defn- newer-sources [then now]
   (filter (partial modified? then now) (keys now)))
 
-(defn ns-in?
-  "Returns true if form is a (in-ns ...) declaration."
-  [form]
-  (and (list? form) (= 'in-ns (first form))))
-
-(defn read-ns-decl
-  "Attempts to read a (ns ...) or (in-ns ...) declaration from a
-  java.io.PushbackReader. Returns [form nil] for ns declarations and
-  [nil form] for in-ns declarations, and [nil nil] if read fails or
-  if a ns or in-ns declaration cannot be found.  The ns/in-ns
-  declaration must be the first Clojure form in the file, except
-  for (comment ...) forms. Based on the function with the same
-  name in core.tools.namespace.parse"
-  [rdr]
-  (try
-    (loop []
-      (let [form (doto (read rdr) str)]
-        (cond
-         (ns-decl? form) [form nil]
-         (ns-in? form)   [nil form]
-         (comment? form) (recur)
-         :else           [nil nil])))
-       (catch Exception e [nil nil])))
-
-(defn read-file-ns-decl
-  "Attempts to read a (ns ...) or (in-ns ...) declaration from file.
-  Returns [form nil] for ns declarations and [nil form] for in-ns
-  declarations, and [nil nil] if read fails or if a ns or in-ns
-  declaration cannot be found. Based on the function with the same
-  name in core.tools.namespace.file"
-  [file]
+(defn- read-file [file func]
   (with-open [rdr (PushbackReader. (io/reader file))]
-    (read-ns-decl rdr)))
+    (func rdr)))
 
 (defn- newer-namespace-decls [then now]
   (loop [new-decls []
-         new-names  #{}
-         files    (newer-sources then now)]
-    (let [file (first files)]
-      (if file
-        (let [[ns-decl ns-in] (read-file-ns-decl file)]
-          (if ns-decl
-            (recur (conj new-decls ns-decl) (conj new-names (second ns-decl)) (rest files))
-            (if ns-in
-              (recur new-decls (conj new-names (second (second ns-in))) (rest files))
-              (recur new-decls new-names (rest files)))))
-        [new-decls new-names]))))
+         new-names #{}
+         files (newer-sources then now)]
+    (if-let [file (first files)]
+      (if-let [ns-decl (read-file file read-ns-decl)]
+        (recur (conj new-decls ns-decl) (conj new-names (second ns-decl)) (rest files))
+        (if-let [in-ns-decl (read-file file read-in-ns-decl)]
+          (recur new-decls (conj new-names (second in-ns-decl)) (rest files))
+          (recur new-decls new-names (rest files))))
+      [new-decls new-names])))
 
 (defn- add-to-dep-graph [dep-graph namespace-decls]
   (reduce (fn [g decl]
