@@ -6,6 +6,7 @@
 
 (deftest test-ns-tracker
   (.mkdirs (file "tmp/example"))
+  (.mkdirs (file "tmp/example/internal"))
   (try
     (let [modified-namespaces (ns-tracker [(file "tmp")])]
       (testing "modified files are reloaded"
@@ -22,6 +23,18 @@
         (modified-namespaces)
         (Thread/sleep 1000)
         (spit (file "tmp/example/util.clj") '(ns example.util))
+        (is (= (modified-namespaces) '(example.util example.core))))
+
+      (testing "can handle in-ns forms"
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/internal/util.clj") '(in-ns example.util))
+        (spit (file "tmp/example/util.clj")
+              (pr-str '(ns example.util) '(load "example/internal/util")))
+        (spit (file "tmp/example/core.clj")
+              '(ns example.core (:use example.util)))
+        (modified-namespaces)
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/internal/util.clj") '(in-ns example.util))
         (is (= (modified-namespaces) '(example.util example.core))))
 
       (testing "namespaces are returned in an order suited for reloading"
