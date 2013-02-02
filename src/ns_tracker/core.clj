@@ -1,10 +1,11 @@
 (ns ns-tracker.core
   "Keeps track of which namespaces have changed and need to be reloaded."
   (:use [ns-tracker.dependency :only (graph seq-union depend dependents remove-key)]
-	[ns-tracker.nsdeps :only (deps-from-ns-decl)]
+        [ns-tracker.nsdeps :only (deps-from-ns-decl)]
         [clojure.java.io :only (file)]
-	[clojure.tools.namespace :only (find-clojure-sources-in-dir
-                                        read-file-ns-decl)]))
+        [clojure.tools.namespace
+         [file :only (read-file-ns-decl)]
+         [find :only (find-clojure-sources-in-dir)]]))
 
 (defn- file? [f]
   (instance? java.io.File f))
@@ -32,10 +33,10 @@
 
 (defn- add-to-dep-graph [dep-graph namespace-decls]
   (reduce (fn [g decl]
-	    (let [nn (second decl)
-		  deps (deps-from-ns-decl decl)]
-	      (apply depend g nn deps)))
-	  dep-graph namespace-decls))
+            (let [nn (second decl)
+                  deps (deps-from-ns-decl decl)]
+              (apply depend g nn deps)))
+          dep-graph namespace-decls))
 
 (defn- remove-from-dep-graph [dep-graph new-decls]
   (apply remove-key dep-graph (map second new-decls)))
@@ -47,8 +48,8 @@
 
 (defn- affected-namespaces [changed-namespaces old-dependency-graph]
   (apply seq-union changed-namespaces
-                   (map #(dependents old-dependency-graph %)
-                        changed-namespaces)))
+         (map #(dependents old-dependency-graph %)
+              changed-namespaces)))
 
 (defn- make-file [f]
   {:pre [(or (string? f) (file? f))]}
