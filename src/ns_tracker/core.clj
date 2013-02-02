@@ -126,7 +126,6 @@
            (when (seq new-names)
              (let [ affected-names
                    (affected-namespaces new-names @dependency-graph)]
-               (println "Reload Namespaces: " (pr-str affected-names))
                (reset! timestamp-map now)
                (swap! dependency-graph update-dependency-graph new-decls)
                affected-names)))))))
