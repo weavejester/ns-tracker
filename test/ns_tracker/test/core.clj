@@ -73,5 +73,16 @@
         (spit (file "tmp/example/util.clj") '(ns example.util))
         (is (= (modified-namespaces) '(example.util example.core)))))
 
+    (testing "circular dependencies throw an AssertionError"
+      (spit (file "tmp/example/ns1.clj") '(ns example.ns1 (:require [example.ns2])))
+      (spit (file "tmp/example/ns2.clj") '(ns example.ns2 (:require [example.ns1])))
+      (Thread/sleep 1000)
+      (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
+
+    (testing "self-dependencies throw an AssertionError"
+      (spit (file "tmp/example/ns1.clj") '(ns example.ns1 (:require [example.ns1])))
+      (Thread/sleep 1000)
+      (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
+    
     (finally
      (FileUtils/deleteDirectory (file "tmp")))))
