@@ -46,17 +46,18 @@
   (update-in graph [key x] union #{y}))
 
 (defn depend
-  "Adds to the dependency graph that x depends on deps.  Forbids
-  circular dependencies."
+  "Adds to the dependency graph that x depends on deps. Forbids
+  circular and self-referential dependencies."
   ([graph x] graph)
   ([graph x dep]
-     {:pre [(not (depends? graph dep x))]}
+     (assert (not (depends? graph dep x)) "circular dependency")
+     (assert (not (= x dep)) "self-referential dependency")
      (-> graph
-	 (add-relationship :dependencies x dep)
-	 (add-relationship :dependents dep x)))
+         (add-relationship :dependencies x dep)
+         (add-relationship :dependents dep x)))
   ([graph x dep & more]
      (reduce (fn [g d] (depend g x d))
-	     graph (cons dep more))))
+             graph (cons dep more))))
 
 (defn- remove-from-map [amap x]
   (reduce (fn [m [k vs]]
