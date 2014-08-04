@@ -20,7 +20,7 @@
 (defn- current-timestamp-map
   "Get the current modified timestamp map for all sources"
   [dirs]
-  (into {} (map (fn [f] {f (.lastModified f)}) (find-sources dirs))))
+  (into {} (map (fn [^java.io.File f] {f (.lastModified f)}) (find-sources dirs))))
 
 (defn- modified?
   "Compare a file to a timestamp map to see if it's been modified since."
