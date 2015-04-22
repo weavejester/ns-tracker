@@ -73,6 +73,31 @@
         (spit (file "tmp/example/util.clj") '(ns example.util))
         (is (= (modified-namespaces) '(example.util example.core)))))
 
+    (testing "libspecs with a prefix list can be handled properly"
+      (spit (file "tmp/example/x.clj") '(ns example.x
+                                          (:require (example.internal [y :as y]
+                                                                      [z :as z]))))
+      (spit (file "tmp/example/internal/y.clj") '(ns example.internal.y))
+      (spit (file "tmp/example/internal/z.clj") '(ns example.internal.z))
+      (Thread/sleep 1000)
+      (let [modified-namespaces (ns-tracker [(file "tmp")])]
+        (Thread/sleep 1000)
+        (spit (file "tmp/example/internal/y.clj") '(ns example.internal.y))
+        (is (= (modified-namespaces) '(example.internal.y example.x)))))
+
+    (testing "a prefix list represented with a vector can also be handled properly"
+      (spit (file "tmp/example/x.clj") '(ns example.x
+                                          (:require [example.internal [y :as y]
+                                                                      [z :as z]])))
+      (spit (file "tmp/example/internal/y.clj") '(ns example.internal.y))
+      (spit (file "tmp/example/internal/z.clj") '(ns example.internal.z))
+      (Thread/sleep 1000)
+      (let [modified-namespaces (ns-tracker [(file "tmp")])]
+        (Thread/sleep 1000)
+        (println (modified-namespaces))
+        (spit (file "tmp/example/internal/y.clj") '(ns example.internal.y))
+        (is (= (modified-namespaces) '(example.internal.y example.x)))))
+
     (testing "circular dependencies throw an AssertionError"
       (spit (file "tmp/example/ns1.clj") '(ns example.ns1 (:require [example.ns2])))
       (spit (file "tmp/example/ns2.clj") '(ns example.ns2 (:require [example.ns1])))
@@ -83,6 +108,6 @@
       (spit (file "tmp/example/ns1.clj") '(ns example.ns1 (:require [example.ns1])))
       (Thread/sleep 1000)
       (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
-    
+
     (finally
      (FileUtils/deleteDirectory (file "tmp")))))
