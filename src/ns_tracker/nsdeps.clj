@@ -3,12 +3,14 @@
   (:use [clojure.set :only (union)]))
 
 (defn- deps-from-libspec [prefix form]
-  (cond (list? form) (apply union (map (fn [f] (deps-from-libspec
-						(symbol (str (when prefix (str prefix "."))
-							     (first form)))
-						f))
-				       (rest form)))
-	(vector? form) (deps-from-libspec prefix (first form))
+  (cond (list? form) (deps-from-libspec prefix (vec form))
+        (vector? form) (if (and (>= (count form) 2)
+                                (not (keyword? (second form))))
+                         (let [prefix (and prefix (str prefix "."))]
+                           (->> (rest form)
+                                (map #(deps-from-libspec (symbol (str prefix (first form))) %))
+                                (apply union)))
+                         (deps-from-libspec prefix (first form)))
 	(symbol? form) #{(symbol (str (when prefix (str prefix ".")) form))}
 	(keyword? form) #{}
 	:else (throw (IllegalArgumentException.
