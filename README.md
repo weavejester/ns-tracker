@@ -42,6 +42,6 @@ request.
 
 ## License
 
-Copyright © 2014 James Reeves, Stuart Sierra
+Copyright © 2015 James Reeves, Stuart Sierra
 
 Distributed under the Eclipse Public License.
