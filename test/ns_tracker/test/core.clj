@@ -94,7 +94,6 @@
       (Thread/sleep 1000)
       (let [modified-namespaces (ns-tracker [(file "tmp")])]
         (Thread/sleep 1000)
-        (println (modified-namespaces))
         (spit (file "tmp/example/internal/y.clj") '(ns example.internal.y))
         (is (= (modified-namespaces) '(example.internal.y example.x)))))
 
