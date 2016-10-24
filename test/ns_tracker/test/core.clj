@@ -47,7 +47,22 @@
         (Thread/sleep 1000)
         (spit (file "tmp/example/a.clj") '(ns example.a))
         (is (= (modified-namespaces)
-               '(example.a example.b example.c example.d)))))
+               '(example.a example.b example.c example.d))))
+
+      (when-not (neg? (compare (clojure-version) "1.7.0"))
+        (testing "modified cljc files are reloaded (Clojure 1.7+)"
+          (Thread/sleep 1000)
+          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc))
+          (is (= (modified-namespaces) '(example.a-cljc)))
+          (is (empty? (modified-namespaces)))
+          (Thread/sleep 1000)
+          (spit (file "tmp/example/b_cljc.cljc") 
+                "(ns example.b-cljc (:require #?(:clj [example.a-cljc] :cljs [example.a-cljc])))")
+          (is (= (modified-namespaces) '(example.b-cljc)))
+          (Thread/sleep 1000)
+          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc (:require clojure.set)))        
+          (is (= (modified-namespaces) '(example.a-cljc example.b-cljc)))
+          (is (empty? (modified-namespaces))))))
 
     (testing "directories can be supplied as strings"
       (let [modified-namespaces (ns-tracker ["tmp"])]
