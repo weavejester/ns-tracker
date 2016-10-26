@@ -1,4 +1,4 @@
-(ns ns-tracker.test.core
+(ns ns-tracker.core-test
   (:import org.apache.commons.io.FileUtils)
   (:use ns-tracker.core
         clojure.test
