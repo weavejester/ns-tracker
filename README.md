@@ -40,6 +40,25 @@ the fly:
 This can be placed in a background thread, or triggered by some user
 request.
 
+### Declaring Dependencies to Static Resources
+
+Some Clojure libraries, such as
+[HugSQL](https://www.hugsql.org/#using-def-db-fns), define functions in
+a namespace based on the content of a static resource file. ns-tracker
+is able to reload such a namespace when the resource file is modified
+with the help of a bit metadata.
+
+You will need to declare the resources under the
+`:ns-tracker/resource-deps` key in the namespace's metadata:
+
+    (ns example.db
+      {:ns-tracker/resource-deps ["sql/queries.sql"]}
+      (:require example.utils))    
+
+The resource path needs to be relative to one of the source directories
+which you gave as a parameter to the `ns-tracker.core/ns-tracker`
+function.
+
 ## License
 
 Copyright © 2016 James Reeves, Stuart Sierra

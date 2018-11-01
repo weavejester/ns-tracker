@@ -1,6 +1,6 @@
 (ns ns-tracker.dependency
   "Bidirectional graphs of dependencies and dependent objects."
-  (:use [clojure.set :only (union)]))
+  (:require [clojure.set :refer [union]]))
 
 (defn graph "Returns a new, empty, dependency graph." []
   {:dependencies {}

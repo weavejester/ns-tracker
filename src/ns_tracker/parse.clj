@@ -1,5 +1,5 @@
 (ns ns-tracker.parse
-  (:use [clojure.tools.namespace.parse :only (comment?)]))
+  (:require [clojure.tools.namespace.parse :refer [comment?]]))
 
 (defn in-ns-decl?
   "Returns true if form is a (in-ns ...) declaration."
