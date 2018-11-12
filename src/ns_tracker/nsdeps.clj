@@ -9,17 +9,18 @@
                                 (not (keyword? (second form))))
                          (let [prefix (and prefix (str prefix "."))]
                            (->> (rest form)
-                                (map #(deps-from-libspec (symbol (str prefix (first form))) %))
+                                (map #(deps-from-libspec
+                                        (symbol (str prefix (first form))) %))
                                 (apply union)))
                          (deps-from-libspec prefix (first form)))
-	(symbol? form) #{(symbol (str (when prefix (str prefix ".")) form))}
-	(keyword? form) #{}
-	:else (throw (IllegalArgumentException.
-		      (pr-str "Unparsable namespace form:" form)))))
+        (symbol? form) #{(symbol (str (when prefix (str prefix ".")) form))}
+        (keyword? form) #{}
+        :else (throw (IllegalArgumentException.
+                       (pr-str "Unparsable namespace form:" form)))))
 
 (defn- deps-from-ns-form [form]
   (when (and (list? form)
-	     (contains? #{:use :require} (first form)))
+             (contains? #{:use :require} (first form)))
     (apply union (map #(deps-from-libspec nil %) (rest form)))))
 
 (defn- find-resource [path dirs]

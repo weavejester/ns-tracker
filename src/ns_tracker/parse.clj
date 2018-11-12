@@ -16,7 +16,7 @@
     (loop []
       (let [form (doto (read rdr) str)]
         (cond
-         (in-ns-decl? form) form
-         (comment? form) (recur)
-         :else nil)))
-       (catch Exception e nil)))
+          (in-ns-decl? form) form
+          (comment? form) (recur)
+          :else nil)))
+    (catch Exception e nil)))

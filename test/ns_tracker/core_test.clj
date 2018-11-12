@@ -15,7 +15,7 @@
         (spit (file "tmp/example/core.clj") '(ns example.core))
         (is (= (modified-namespaces) '(example.core)))
         (is (empty? (modified-namespaces))))
-      
+
       (testing "dependant files are reloaded"
         (Thread/sleep 1000)
         (spit (file "tmp/example/util.clj") '(ns example.util))
@@ -67,11 +67,11 @@
           (is (= (modified-namespaces) '(example.a-cljc)))
           (is (empty? (modified-namespaces)))
           (Thread/sleep 1000)
-          (spit (file "tmp/example/b_cljc.cljc") 
+          (spit (file "tmp/example/b_cljc.cljc")
                 "(ns example.b-cljc (:require #?(:clj [example.a-cljc] :cljs [example.a-cljc])))")
           (is (= (modified-namespaces) '(example.b-cljc)))
           (Thread/sleep 1000)
-          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc (:require clojure.set)))        
+          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc (:require clojure.set)))
           (is (= (modified-namespaces) '(example.a-cljc example.b-cljc)))
           (is (empty? (modified-namespaces))))))
 
@@ -135,4 +135,4 @@
       (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
 
     (finally
-     (FileUtils/deleteDirectory (file "tmp")))))
+      (FileUtils/deleteDirectory (file "tmp")))))
