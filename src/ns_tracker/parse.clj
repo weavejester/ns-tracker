@@ -1,5 +1,5 @@
 (ns ns-tracker.parse
-  (:use [clojure.tools.namespace.parse :only (comment?)]))
+  (:require [clojure.tools.namespace.parse :refer [comment?]]))
 
 (defn in-ns-decl?
   "Returns true if form is a (in-ns ...) declaration."
@@ -16,7 +16,7 @@
     (loop []
       (let [form (doto (read rdr) str)]
         (cond
-         (in-ns-decl? form) form
-         (comment? form) (recur)
-         :else nil)))
-       (catch Exception e nil)))
+          (in-ns-decl? form) form
+          (comment? form) (recur)
+          :else nil)))
+    (catch Exception e nil)))

@@ -1,12 +1,13 @@
 (ns ns-tracker.core-test
   (:import org.apache.commons.io.FileUtils)
-  (:use ns-tracker.core
-        clojure.test
-        [clojure.java.io :only (file)]))
+  (:require [ns-tracker.core :refer :all]
+            [clojure.test :refer :all]
+            [clojure.java.io :refer [file]]))
 
 (deftest test-ns-tracker
   (.mkdirs (file "tmp/example"))
   (.mkdirs (file "tmp/example/internal"))
+  (.mkdirs (file "tmp/sql"))
   (try
     (let [modified-namespaces (ns-tracker [(file "tmp")])]
       (testing "modified files are reloaded"
@@ -14,7 +15,7 @@
         (spit (file "tmp/example/core.clj") '(ns example.core))
         (is (= (modified-namespaces) '(example.core)))
         (is (empty? (modified-namespaces))))
-      
+
       (testing "dependant files are reloaded"
         (Thread/sleep 1000)
         (spit (file "tmp/example/util.clj") '(ns example.util))
@@ -24,6 +25,16 @@
         (Thread/sleep 1000)
         (spit (file "tmp/example/util.clj") '(ns example.util))
         (is (= (modified-namespaces) '(example.util example.core))))
+
+      (testing "dependent files of static resources are reloaded"
+        (Thread/sleep 1000)
+        (spit (file "tmp/sql/queries.sql") "select 1")
+        (spit (file "tmp/example/db.clj")
+              "(ns ^{:ns-tracker/resource-deps [\"sql/queries.sql\"]} example.db)")
+        (modified-namespaces)
+        (Thread/sleep 1000)
+        (spit (file "tmp/sql/queries.sql") "select 1")
+        (is (= (modified-namespaces) '(example.db))))
 
       (testing "can handle in-ns forms"
         (Thread/sleep 1000)
@@ -56,11 +67,11 @@
           (is (= (modified-namespaces) '(example.a-cljc)))
           (is (empty? (modified-namespaces)))
           (Thread/sleep 1000)
-          (spit (file "tmp/example/b_cljc.cljc") 
+          (spit (file "tmp/example/b_cljc.cljc")
                 "(ns example.b-cljc (:require #?(:clj [example.a-cljc] :cljs [example.a-cljc])))")
           (is (= (modified-namespaces) '(example.b-cljc)))
           (Thread/sleep 1000)
-          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc (:require clojure.set)))        
+          (spit (file "tmp/example/a_cljc.cljc") '(ns example.a-cljc (:require clojure.set)))
           (is (= (modified-namespaces) '(example.a-cljc example.b-cljc)))
           (is (empty? (modified-namespaces))))))
 
@@ -124,4 +135,4 @@
       (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
 
     (finally
-     (FileUtils/deleteDirectory (file "tmp")))))
+      (FileUtils/deleteDirectory (file "tmp")))))

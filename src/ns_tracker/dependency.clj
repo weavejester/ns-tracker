@@ -1,6 +1,6 @@
 (ns ns-tracker.dependency
   "Bidirectional graphs of dependencies and dependent objects."
-  (:use [clojure.set :only (union)]))
+  (:require [clojure.set :refer [union]]))
 
 (defn graph "Returns a new, empty, dependency graph." []
   {:dependencies {}
@@ -18,8 +18,8 @@
   at (get m x)"
   [m x]
   (reduce (fn [s k]
-	    (seq-union s (transitive m k)))
-	  (get m x) (get m x)))
+            (seq-union s (transitive m k)))
+          (get m x) (get m x)))
 
 (defn dependencies
   "Returns the set of all things x depends on, directly or transitively."
@@ -50,38 +50,38 @@
   circular and self-referential dependencies."
   ([graph x] graph)
   ([graph x dep]
-     (assert (not (depends? graph dep x)) "circular dependency")
-     (assert (not (= x dep)) "self-referential dependency")
-     (-> graph
-         (add-relationship :dependencies x dep)
-         (add-relationship :dependents dep x)))
+   (assert (not (depends? graph dep x)) "circular dependency")
+   (assert (not (= x dep)) "self-referential dependency")
+   (-> graph
+       (add-relationship :dependencies x dep)
+       (add-relationship :dependents dep x)))
   ([graph x dep & more]
-     (reduce (fn [g d] (depend g x d))
-             graph (cons dep more))))
+   (reduce (fn [g d] (depend g x d))
+           graph (cons dep more))))
 
 (defn- remove-from-map [amap x]
   (reduce (fn [m [k vs]]
-	    (assoc m k (disj vs x)))
-	  {} (dissoc amap x)))
+            (assoc m k (disj vs x)))
+          {} (dissoc amap x)))
 
 (defn remove-all
   "Removes all references to x in the dependency graph."
   ([graph] graph)
   ([graph x]
-     (assoc graph
-       :dependencies (remove-from-map (:dependencies graph) x)
-       :dependents (remove-from-map (:dependents graph) x)))
+   (assoc graph
+     :dependencies (remove-from-map (:dependencies graph) x)
+     :dependents (remove-from-map (:dependents graph) x)))
   ([graph x & more]
-     (reduce remove-all
-	     graph (cons x more))))
+   (reduce remove-all
+           graph (cons x more))))
 
 (defn remove-key
   "Removes the key x from the dependency graph without removing x as a
   depedency of other keys."
   ([graph] graph)
   ([graph x]
-     (assoc graph
-       :dependencies (dissoc (:dependencies graph) x)))
+   (assoc graph
+     :dependencies (dissoc (:dependencies graph) x)))
   ([graph x & more]
-     (reduce remove-key
-	     graph (cons x more))))
+   (reduce remove-key
+           graph (cons x more))))
