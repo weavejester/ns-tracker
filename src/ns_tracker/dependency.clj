@@ -17,9 +17,12 @@
   "Recursively expands the set of dependency relationships starting
   at (get m x)"
   [m x]
-  (reduce (fn [s k]
-            (seq-union s (transitive m k)))
-          (get m x) (get m x)))
+  (loop [acc [], deps (get m x)]
+    (if-let [new-deps (seq (distinct (remove (set acc) deps)))]
+      (recur
+       (into acc new-deps)
+       (mapcat (partial get m) new-deps))
+      acc)))
 
 (defn dependencies
   "Returns the set of all things x depends on, directly or transitively."
