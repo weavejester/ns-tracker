@@ -61,6 +61,6 @@ function.
 
 ## License
 
-Copyright © 2016 James Reeves, Stuart Sierra
+Copyright © 2019 James Reeves, Stuart Sierra
 
 Distributed under the Eclipse Public License.
