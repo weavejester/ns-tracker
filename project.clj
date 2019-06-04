@@ -1,5 +1,8 @@
 (defproject ns-tracker "0.3.1"
   :description "Keep track of which namespaces have been modified"
+  :url "https://github.com/weavejester/ns-tracker"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [org.clojure/java.classpath "0.3.0"]]
