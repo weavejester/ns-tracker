@@ -132,7 +132,9 @@
     (testing "self-dependencies throw an AssertionError"
       (spit (file "tmp/example/ns1.clj") '(ns example.ns1 (:require [example.ns1])))
       (Thread/sleep 1000)
-      (is (thrown? AssertionError (ns-tracker [(file "tmp")]))))
+      (is (thrown-with-msg? AssertionError
+                            #"self-referential dependency example.ns1"
+                            (ns-tracker [(file "tmp")]))))
 
     (finally
       (FileUtils/deleteDirectory (file "tmp")))))
