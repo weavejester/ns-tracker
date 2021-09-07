@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/tools.namespace "0.2.11"]
-                 [org.clojure/java.classpath "0.3.0"]]
+                 [org.clojure/tools.namespace "1.1.0"]
+                 [org.clojure/java.classpath "1.0.0"]]
   :aliases
   {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8:+1.9:+1.10" "test"]}
   :profiles
