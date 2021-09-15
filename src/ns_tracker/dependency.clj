@@ -54,7 +54,7 @@
   ([graph x] graph)
   ([graph x dep]
    (assert (not (depends? graph dep x)) "circular dependency")
-   (assert (not (= x dep)) "self-referential dependency")
+   (assert (not (= x dep)) (str "self-referential dependency " dep))
    (-> graph
        (add-relationship :dependencies x dep)
        (add-relationship :dependents dep x)))
