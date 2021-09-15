@@ -67,5 +67,12 @@
           (is (= "ns-tracker: Unable to track dependency from namespace example.db to resource \"sql/bar.sql\". The resource was not found in directories [\"tmp\"]."
                  (trim-newline stderr)))))
 
+      (testing "ignores `:as-alias` require"
+        (is (= #{'example.foo}
+               (deps-from-ns-decl
+                '(ns example.db (:require [example.foo :as foo]
+                                          [example.bar :as-alias bar]))
+                [tmp-dir]))))
+
       (finally
         (FileUtils/deleteDirectory tmp-dir)))))
