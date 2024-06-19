@@ -1,4 +1,4 @@
-(defproject ns-tracker "0.4.0"
+(defproject ns-tracker "1.0.0"
   :description "Keep track of which namespaces have been modified"
   :url "https://github.com/weavejester/ns-tracker"
   :license {:name "Eclipse Public License"

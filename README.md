@@ -17,11 +17,11 @@ should therefore go to him.
 
 Add the following dependency to your deps.edn file:
 
-    ns-tracker/ns-tracker {:mvn/version "0.4.0"}
+    ns-tracker/ns-tracker {:mvn/version "1.0.0"}
 
 Or this to your Leiningen dependencies:
 
-    [ns-tracker "0.4.0"]
+    [ns-tracker "1.0.0"]
 
 ## Usage
 
