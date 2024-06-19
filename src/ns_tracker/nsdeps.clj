@@ -12,7 +12,9 @@
                                 (map #(deps-from-libspec
                                         (symbol (str prefix (first form))) %))
                                 (apply union)))
-                         (deps-from-libspec prefix (first form)))
+                         (if (= (second form) :as-alias)
+                           #{}
+                           (deps-from-libspec prefix (first form))))
         (symbol? form) #{(symbol (str (when prefix (str prefix ".")) form))}
         (keyword? form) #{}
         :else (throw (IllegalArgumentException.
