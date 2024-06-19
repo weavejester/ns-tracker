@@ -7,16 +7,19 @@ files and their associated namespaces. This is usually used to
 automatically reload modified namespaces in a running Clojure
 application.
 
-It is derived from code in Stuart Sierra's [Lazytest][1] tool, and the
+It is derived from code in Stuart Sierra's [Lazytest][] tool, and the
 credit for writing the vast majority of the code used in this library
 should therefore go to him.
 
-[1]: https://github.com/stuartsierra/lazytest
+[lazytest]: https://github.com/stuartsierra/lazytest
 
 ## Installation
 
-As usual, to use this library, add the following dependency to your
-`project.clj` file:
+Add the following dependency to your deps.edn file:
+
+    ns-tracker/ns-tracker {:mvn/version "0.4.0"}
+
+Or this to your Leiningen dependencies:
 
     [ns-tracker "0.4.0"]
 
@@ -25,10 +28,10 @@ As usual, to use this library, add the following dependency to your
 Use the `ns-tracker.core/ns-tracker` function to create a new tracker
 function for one or more source directories:
 
-    (use 'ns-tracker.core)
+    (require '[ns-tracker.core :as nt])
 
     (def modified-namespaces
-      (ns-tracker ["src" "test"]))
+      (nt/ns-tracker ["src" "test"]))
 
 When you call the `modified-namespaces` function, it will return a list
 of Clojure namespaces that have changed. You can then reload them on
