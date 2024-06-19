@@ -53,7 +53,7 @@ You will need to declare the resources under the
 
     (ns example.db
       {:ns-tracker/resource-deps ["sql/queries.sql"]}
-      (:require example.utils))    
+      (:require example.utils))
 
 The resource path needs to be relative to one of the source directories
 which you gave as a parameter to the `ns-tracker.core/ns-tracker`
