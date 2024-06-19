@@ -1,6 +1,6 @@
 # ns-tracker
 
-[![Build Status](https://travis-ci.org/weavejester/ns-tracker.svg?branch=master)](https://travis-ci.org/weavejester/ns-tracker)
+[![Build Status](https://github.com/weavejester/ns-tracker/actions/workflows/test.yml/badge.svg)](https://github.com/weavejester/ns-tracker/actions/workflows/test.yml)
 
 ns-tracker is a Clojure library for keeping track of changes to source
 files and their associated namespaces. This is usually used to
